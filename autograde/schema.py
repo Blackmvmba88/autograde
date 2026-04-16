@@ -24,6 +24,27 @@ def dump_exam(exam: dict[str, Any], path: str | Path) -> None:
 def validate_exam_structure(exam: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     _validate_object(exam, EXAM_SCHEMA, errors, path="exam")
+    questions = exam.get("questions", []) if isinstance(exam, dict) else []
+    if isinstance(questions, list):
+        seen_ids: set[str] = set()
+        for index, question in enumerate(questions, start=1):
+            if not isinstance(question, dict):
+                continue
+            qid = question.get("id")
+            if isinstance(qid, str) and qid:
+                if qid in seen_ids:
+                    errors.append(f"exam.questions[{index}].id: duplicate question id '{qid}'")
+                seen_ids.add(qid)
+            if question.get("type") == "multiple_choice":
+                choices = question.get("choices", [])
+                choice_ids = {
+                    choice.get("id")
+                    for choice in choices
+                    if isinstance(choice, dict) and isinstance(choice.get("id"), str)
+                }
+                correct_choice_id = question.get("correct_choice_id")
+                if correct_choice_id not in choice_ids:
+                    errors.append(f"exam.questions[{index}].correct_choice_id: must match one of the choice ids")
     return errors
 
 

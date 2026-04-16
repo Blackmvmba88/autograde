@@ -42,6 +42,8 @@ def run_authoring(path: str | Path | None = None) -> int:
     if output_path and output_path.exists():
         exam = load_exam(output_path)
         print(f"Cargado: {output_path}")
+    elif output_path:
+        print(f"Nuevo examen. Guardado por defecto en: {output_path}")
     else:
         print("Nuevo examen creado en memoria.")
 
