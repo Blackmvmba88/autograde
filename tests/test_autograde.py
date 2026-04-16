@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from autograde.cli import main
 from autograde.grading import grade_exam
@@ -48,8 +49,16 @@ class AutoGradeTests(unittest.TestCase):
             self.assertEqual(data["scoring"]["max_points"], 1)
 
     def test_cli_author_command(self) -> None:
-        exit_code = main(["author"])
-        self.assertEqual(exit_code, 0)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = Path(tmpdir) / "author_exam.json"
+            inputs = iter([
+                "8",  # save and exit
+                str(out_path),
+            ])
+            with patch("builtins.input", lambda prompt="": next(inputs)):
+                exit_code = main(["author"])
+            self.assertEqual(exit_code, 0)
+            self.assertTrue(out_path.exists())
 
 
 if __name__ == "__main__":

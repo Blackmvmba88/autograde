@@ -4,7 +4,7 @@
 
 Multimodal exam evaluation engine.
 
-Define once, render anywhere, evaluate consistently.
+Define once, author locally, render anywhere, evaluate consistently.
 
 - OMR / paper exams
 - Web quizzes
@@ -43,8 +43,7 @@ autograde validate examples/exam_math_v1.json
 autograde generate --template examples/exam_math_v1.json --out generated_exam.json
 autograde grade --exam examples/exam_math_v1.json --responses examples/responses_math_v1.json
 autograde render examples/exam_math_v1.json --to web
-autograde author --open
-autograde author --serve
+autograde author
 ```
 
 ## Example Exam
@@ -54,7 +53,7 @@ autograde author --serve
 ## Features
 
 - Schema-based exam validation
-- Browser-based authoring UI for desktop and mobile
+- Terminal-based authoring flow for desktop-first local creation
 - Exam normalization during generation
 - Multi-type grading for multiple choice, true/false, short answer, open ended, and practical items
 - Target-aware exam rendering for `omr`, `web`, `pdf`, and `simulation`
@@ -67,7 +66,7 @@ autograde author --serve
 - [x] validation
 - [x] grading
 - [x] render layer
-- [x] authoring UI
+- [x] authoring flow
 - [ ] OMR image ingestion
 - [ ] richer rubrics for free-response grading
 - [ ] visual PDF export
@@ -78,4 +77,4 @@ autograde author --serve
 - The current renderer returns structured JSON, not final design assets.
 - Free-response grading is deterministic today and intentionally conservative.
 - `examples/responses_math_v1.json` is a suggested next fixture for local testing.
-- `authoring/index.html` is a standalone responsive exam builder that works on desktop and mobile.
+- `autograde author` is a local terminal editor for building and saving exam JSON by hand.
