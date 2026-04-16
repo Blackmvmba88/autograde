@@ -27,6 +27,7 @@ That lets the same exam schema travel across paper, web, and future simulation w
 python -m autograde.cli validate examples/exam_math_v1.json
 python -m autograde.cli render examples/exam_math_v1.json --to omr
 python -m autograde.cli grade --exam examples/exam_math_v1.json --responses examples/responses_math_v1.json
+python -m autograde.cli author
 ```
 
 ## Install
@@ -42,6 +43,8 @@ autograde validate examples/exam_math_v1.json
 autograde generate --template examples/exam_math_v1.json --out generated_exam.json
 autograde grade --exam examples/exam_math_v1.json --responses examples/responses_math_v1.json
 autograde render examples/exam_math_v1.json --to web
+autograde author --open
+autograde author --serve
 ```
 
 ## Example Exam
@@ -51,6 +54,7 @@ autograde render examples/exam_math_v1.json --to web
 ## Features
 
 - Schema-based exam validation
+- Browser-based authoring UI for desktop and mobile
 - Exam normalization during generation
 - Multi-type grading for multiple choice, true/false, short answer, open ended, and practical items
 - Target-aware exam rendering for `omr`, `web`, `pdf`, and `simulation`
@@ -63,6 +67,7 @@ autograde render examples/exam_math_v1.json --to web
 - [x] validation
 - [x] grading
 - [x] render layer
+- [x] authoring UI
 - [ ] OMR image ingestion
 - [ ] richer rubrics for free-response grading
 - [ ] visual PDF export
@@ -73,3 +78,4 @@ autograde render examples/exam_math_v1.json --to web
 - The current renderer returns structured JSON, not final design assets.
 - Free-response grading is deterministic today and intentionally conservative.
 - `examples/responses_math_v1.json` is a suggested next fixture for local testing.
+- `authoring/index.html` is a standalone responsive exam builder that works on desktop and mobile.

@@ -3,14 +3,20 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import webbrowser
 from pathlib import Path
 from typing import Any
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from threading import Thread
 
 from autograde import __version__
 from autograde.diagnostics import build_diagnostic_report
 from autograde.grading import grade_exam
 from autograde.rendering import render_exam
 from autograde.schema import dump_exam, load_exam, normalize_exam, validate_exam_structure
+
+
+AUTHORING_INDEX = Path(__file__).resolve().parent.parent / "authoring" / "index.html"
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
@@ -67,6 +73,35 @@ def cmd_render(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_author(args: argparse.Namespace) -> int:
+    if not AUTHORING_INDEX.exists():
+        print("authoring UI not found", file=sys.stderr)
+        return 1
+
+    if args.serve:
+        root = AUTHORING_INDEX.parent
+        port = args.port
+
+        class Handler(SimpleHTTPRequestHandler):
+            def __init__(self, *handler_args: Any, **handler_kwargs: Any) -> None:
+                super().__init__(*handler_args, directory=str(root), **handler_kwargs)
+
+        server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+        url = f"http://127.0.0.1:{port}/index.html"
+        if args.open:
+            webbrowser.open(url)
+        print(url)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            return 0
+
+    print(AUTHORING_INDEX)
+    if args.open:
+        webbrowser.open(AUTHORING_INDEX.as_uri())
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="autograde")
     parser.add_argument("--version", action="version", version=f"AutoGrade v{__version__}")
@@ -91,6 +126,12 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser.add_argument("--to", required=True, type=str, choices=["omr", "web", "pdf", "simulation"])
     render_parser.add_argument("--out", required=False, type=str)
     render_parser.set_defaults(func=cmd_render)
+
+    author_parser = subparsers.add_parser("author", help="Open or serve the exam authoring UI")
+    author_parser.add_argument("--serve", action="store_true", help="Serve the authoring UI locally")
+    author_parser.add_argument("--open", action="store_true", help="Open the UI in a browser")
+    author_parser.add_argument("--port", type=int, default=8765)
+    author_parser.set_defaults(func=cmd_author)
 
     return parser
 

@@ -47,6 +47,10 @@ class AutoGradeTests(unittest.TestCase):
             self.assertIn("scoring", data)
             self.assertEqual(data["scoring"]["max_points"], 1)
 
+    def test_cli_author_command(self) -> None:
+        exit_code = main(["author"])
+        self.assertEqual(exit_code, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
