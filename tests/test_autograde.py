@@ -52,7 +52,7 @@ class AutoGradeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             out_path = Path(tmpdir) / "author_exam.json"
             inputs = iter([
-                "8",  # save and exit
+                "10",  # save and exit
                 str(out_path),
             ])
             with patch("builtins.input", lambda prompt="": next(inputs)):

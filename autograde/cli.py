@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from autograde import __version__
-from autograde.authoring import run_authoring
+from autograde.authoring import load_template, run_authoring
 from autograde.diagnostics import build_diagnostic_report
 from autograde.grading import grade_exam
 from autograde.rendering import render_exam
@@ -68,6 +68,19 @@ def cmd_render(args: argparse.Namespace) -> int:
 
 
 def cmd_author(args: argparse.Namespace) -> int:
+    if args.template:
+        try:
+            template = load_template(args.template)
+        except KeyError:
+            print(f"unknown template: {args.template}", file=sys.stderr)
+            return 1
+        if args.file:
+            path = Path(args.file)
+            if path.exists():
+                return run_authoring(path, template)
+            print(f"Nuevo examen basado en plantilla: {args.template}. Guardado por defecto en: {path}")
+            return run_authoring(path, template)
+        return run_authoring(exam=template)
     return run_authoring(args.file)
 
 
@@ -98,6 +111,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     author_parser = subparsers.add_parser("author", help="Create or edit exams locally in the terminal")
     author_parser.add_argument("--file", type=str, default=None, help="Optional JSON file to load or save")
+    author_parser.add_argument("--template", type=str, default=None, choices=["multiple_choice", "mixed", "open"], help="Start from a preset template")
     author_parser.set_defaults(func=cmd_author)
 
     return parser

@@ -44,7 +44,14 @@ autograde generate --template examples/exam_math_v1.json --out generated_exam.js
 autograde grade --exam examples/exam_math_v1.json --responses examples/responses_math_v1.json
 autograde render examples/exam_math_v1.json --to web
 autograde author
+autograde author --template mixed --file exam_docente.json
 ```
+
+Plantillas rápidas:
+
+- `multiple_choice`
+- `mixed`
+- `open`
 
 ## Example Exam
 
@@ -54,6 +61,7 @@ autograde author
 
 - Schema-based exam validation
 - Terminal-based authoring flow for desktop-first local creation
+- Quick-start templates for docentes
 - Exam normalization during generation
 - Multi-type grading for multiple choice, true/false, short answer, open ended, and practical items
 - Target-aware exam rendering for `omr`, `web`, `pdf`, and `simulation`

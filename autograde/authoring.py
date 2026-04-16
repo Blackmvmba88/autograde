@@ -35,12 +35,79 @@ DEFAULT_EXAM: dict[str, Any] = {
     ],
 }
 
+TEMPLATES: dict[str, dict[str, Any]] = {
+    "multiple_choice": {
+        **deepcopy(DEFAULT_EXAM),
+        "id": "mcq-template",
+        "title": "Plantilla Multiple Choice",
+        "format": "omr",
+        "questions": [
+            {
+                "id": "q1",
+                "type": "multiple_choice",
+                "prompt": "Pregunta de opción múltiple",
+                "points": 1,
+                "tags": [],
+                "choices": [
+                    {"id": "a", "text": "Opcion A"},
+                    {"id": "b", "text": "Opcion B"},
+                ],
+                "correct_choice_id": "a",
+            }
+        ],
+    },
+    "mixed": {
+        **deepcopy(DEFAULT_EXAM),
+        "id": "mixed-template",
+        "title": "Plantilla Mixta",
+        "format": "quiz",
+        "questions": [
+            {
+                "id": "q1",
+                "type": "multiple_choice",
+                "prompt": "Pregunta de opción múltiple",
+                "points": 1,
+                "tags": [],
+                "choices": [
+                    {"id": "a", "text": "Opcion A"},
+                    {"id": "b", "text": "Opcion B"},
+                ],
+                "correct_choice_id": "a",
+            },
+            {
+                "id": "q2",
+                "type": "short_answer",
+                "prompt": "Respuesta corta",
+                "points": 1,
+                "tags": [],
+                "answer_key": "respuesta",
+            },
+        ],
+    },
+    "open": {
+        **deepcopy(DEFAULT_EXAM),
+        "id": "open-template",
+        "title": "Plantilla Abierta",
+        "format": "open",
+        "questions": [
+            {
+                "id": "q1",
+                "type": "open_ended",
+                "prompt": "Pregunta abierta",
+                "points": 1,
+                "tags": [],
+                "answer_key": "respuesta esperada",
+            }
+        ],
+    },
+}
 
-def run_authoring(path: str | Path | None = None) -> int:
+
+def run_authoring(path: str | Path | None = None, exam: dict[str, Any] | None = None) -> int:
     output_path = Path(path) if path else None
-    exam = deepcopy(DEFAULT_EXAM)
+    exam_state = deepcopy(exam) if exam is not None else deepcopy(DEFAULT_EXAM)
     if output_path and output_path.exists():
-        exam = load_exam(output_path)
+        exam_state = load_exam(output_path)
         print(f"Cargado: {output_path}")
     elif output_path:
         print(f"Nuevo examen. Guardado por defecto en: {output_path}")
@@ -50,36 +117,42 @@ def run_authoring(path: str | Path | None = None) -> int:
     try:
         while True:
             print("\n=== AutoGrade Authoring ===")
-            print(f"ID: {exam.get('id', '')} | Titulo: {exam.get('title', '')} | Preguntas: {len(exam.get('questions', []))}")
+            print(f"ID: {exam_state.get('id', '')} | Titulo: {exam_state.get('title', '')} | Preguntas: {len(exam_state.get('questions', []))}")
             print("1) Editar metadatos")
             print("2) Agregar pregunta")
             print("3) Editar pregunta")
             print("4) Eliminar pregunta")
-            print("5) Validar")
-            print("6) Ver JSON")
-            print("7) Guardar")
-            print("8) Guardar y salir")
-            print("9) Salir sin guardar")
+            print("5) Duplicar pregunta")
+            print("6) Mover pregunta")
+            print("7) Validar")
+            print("8) Ver JSON")
+            print("9) Guardar")
+            print("10) Guardar y salir")
+            print("11) Salir sin guardar")
             choice = _prompt("Opcion", default="5")
 
             if choice == "1":
-                _edit_metadata(exam)
+                _edit_metadata(exam_state)
             elif choice == "2":
-                exam.setdefault("questions", []).append(_create_question())
+                exam_state.setdefault("questions", []).append(_create_question(exam_state))
             elif choice == "3":
-                _edit_question(exam)
+                _edit_question(exam_state)
             elif choice == "4":
-                _delete_question(exam)
+                _delete_question(exam_state)
             elif choice == "5":
-                _print_validation(exam)
+                _duplicate_question(exam_state)
             elif choice == "6":
-                print(json.dumps(normalize_exam(exam), indent=2, ensure_ascii=False))
+                _move_question(exam_state)
             elif choice == "7":
-                _save_exam(exam, output_path)
+                _print_validation(exam_state)
             elif choice == "8":
-                _save_exam(exam, output_path)
-                return 0
+                print(json.dumps(normalize_exam(exam_state), indent=2, ensure_ascii=False))
             elif choice == "9":
+                _save_exam(exam_state, output_path)
+            elif choice == "10":
+                _save_exam(exam_state, output_path)
+                return 0
+            elif choice == "11":
                 return 0
             else:
                 print("Opcion no valida.")
@@ -101,9 +174,10 @@ def _edit_metadata(exam: dict[str, Any]) -> None:
     exam["passing_score"] = _prompt_float("Puntaje aprobatorio", float(exam.get("passing_score", 70)))
 
 
-def _create_question() -> dict[str, Any]:
+def _create_question(exam: dict[str, Any] | None = None) -> dict[str, Any]:
+    next_index = len(exam.get("questions", [])) + 1 if exam else 1
     question = {
-        "id": _prompt("Pregunta ID", ""),
+        "id": _prompt("Pregunta ID", f"q{next_index}"),
         "type": _prompt_choice("Tipo", "multiple_choice", ["multiple_choice", "short_answer", "true_false", "open_ended", "practical"]),
         "prompt": _prompt("Prompt", ""),
         "points": _prompt_float("Puntos", 1.0),
@@ -170,6 +244,41 @@ def _delete_question(exam: dict[str, Any]) -> None:
         print(f"Eliminada: {removed.get('id')}")
     else:
         print("Indice fuera de rango.")
+
+
+def _duplicate_question(exam: dict[str, Any]) -> None:
+    questions = exam.get("questions", [])
+    if not questions:
+        print("No hay preguntas.")
+        return
+    _print_questions(questions)
+    index = _prompt_int("Numero de pregunta a duplicar", 1) - 1
+    if 0 <= index < len(questions):
+        copied = deepcopy(questions[index])
+        copied["id"] = _prompt("Nuevo ID", f"{copied.get('id', 'q')}_copy")
+        questions.insert(index + 1, copied)
+        print(f"Duplicada: {copied.get('id')}")
+    else:
+        print("Indice fuera de rango.")
+
+
+def _move_question(exam: dict[str, Any]) -> None:
+    questions = exam.get("questions", [])
+    if len(questions) < 2:
+        print("Hace falta al menos 2 preguntas.")
+        return
+    _print_questions(questions)
+    index = _prompt_int("Numero de pregunta a mover", 1) - 1
+    direction = _prompt_choice("Direccion", "up", ["up", "down"])
+    if not (0 <= index < len(questions)):
+        print("Indice fuera de rango.")
+        return
+    if direction == "up" and index > 0:
+        questions[index - 1], questions[index] = questions[index], questions[index - 1]
+    elif direction == "down" and index < len(questions) - 1:
+        questions[index + 1], questions[index] = questions[index], questions[index + 1]
+    else:
+        print("No se puede mover en esa direccion.")
 
 
 def _print_validation(exam: dict[str, Any]) -> None:
@@ -241,3 +350,9 @@ def _prompt_list(label: str, default: list[str]) -> list[str]:
     if not value:
         return list(default)
     return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def load_template(name: str) -> dict[str, Any]:
+    if name not in TEMPLATES:
+        raise KeyError(name)
+    return deepcopy(TEMPLATES[name])
