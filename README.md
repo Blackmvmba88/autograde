@@ -1,5 +1,7 @@
 # AutoGrade
 
+![CI](https://github.com/Blackmvmba88/autograde/actions/workflows/ci.yml/badge.svg)
+
 Multimodal exam evaluation engine.
 
 Define once, render anywhere, evaluate consistently.

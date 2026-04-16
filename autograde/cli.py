@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from autograde import __version__
 from autograde.diagnostics import build_diagnostic_report
 from autograde.grading import grade_exam
 from autograde.rendering import render_exam
@@ -68,6 +69,7 @@ def cmd_render(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="autograde")
+    parser.add_argument("--version", action="version", version=f"AutoGrade v{__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     validate_parser = subparsers.add_parser("validate", help="Validate an exam JSON file")
