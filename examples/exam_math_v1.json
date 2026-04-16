@@ -1,0 +1,31 @@
+{
+  "id": "math-v1",
+  "title": "Matemáticas Básicas",
+  "subject": "mathematics",
+  "level": "high_school",
+  "difficulty": "medium",
+  "competency": "reasoning",
+  "format": "omr",
+  "description": "Examen base de opción múltiple.",
+  "time_limit_minutes": 50,
+  "passing_score": 70,
+  "scoring": {
+    "mode": "points_per_question",
+    "max_points": 1
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "¿Cuánto es 8 + 7?",
+      "points": 1,
+      "choices": [
+        { "id": "a", "text": "14" },
+        { "id": "b", "text": "15" },
+        { "id": "c", "text": "16" },
+        { "id": "d", "text": "17" }
+      ],
+      "correct_choice_id": "b"
+    }
+  ]
+}

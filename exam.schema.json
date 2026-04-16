@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/autograde/exam.schema.json",
+  "title": "AutoGrade Exam",
+  "type": "object",
+  "required": ["id", "title", "subject", "level", "questions"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1
+    },
+    "level": {
+      "type": "string",
+      "enum": ["primary", "high_school", "university", "specialization"]
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"]
+    },
+    "competency": {
+      "type": "string",
+      "enum": ["memory", "reasoning", "execution", "analysis"]
+    },
+    "format": {
+      "type": "string",
+      "enum": ["omr", "quiz", "open", "simulation"]
+    },
+    "description": {
+      "type": "string"
+    },
+    "time_limit_minutes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "passing_score": {
+      "type": "number",
+      "minimum": 0
+    },
+    "scoring": {
+      "type": "object",
+      "required": ["mode", "max_points"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["points_per_question", "weighted"]
+        },
+        "max_points": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "prompt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": ["multiple_choice", "short_answer", "true_false", "open_ended", "practical"]
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "points": {
+            "type": "number",
+            "minimum": 0
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "text"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "correct_choice_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "answer_key": {
+            "type": ["string", "number", "boolean"]
+          },
+          "rubric": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "multiple_choice"
+                }
+              }
+            },
+            "then": {
+              "required": ["choices", "correct_choice_id"]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "enum": ["short_answer", "true_false", "open_ended", "practical"]
+                }
+              }
+            },
+            "then": {
+              "required": ["answer_key"]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}
